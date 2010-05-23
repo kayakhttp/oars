@@ -22,6 +22,12 @@ namespace Oars.Core
             event_base_dispatch(Handle);
         }
 
+        public bool LoopExit()
+        {
+            // TODO pass in null for timeval
+            return LoopExit(TimeSpan.FromSeconds(0.01));
+        }
+
         public bool LoopExit(TimeSpan timeout)
         {
             ThrowIfDisposed();

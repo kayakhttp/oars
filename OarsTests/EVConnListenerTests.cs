@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using Oars;
 using Oars.Core;
 using System.Net;
 using System.Threading;
@@ -13,9 +14,9 @@ namespace OarsTests
     [TestFixture]
     public class EVConnListenerTests
     {
-        static IPEndPoint TestEndPoint = new IPEndPoint(IPAddress.Loopback, 4200);
+        public static IPEndPoint TestEndPoint = new IPEndPoint(IPAddress.Loopback, 4200);
         static IPEndPoint TestClientEndPoint = new IPEndPoint(IPAddress.Loopback, 42001);
-        static short TestBacklog = 1;
+        public static short TestBacklog = 1;
 
         EventBase eventBase;
         EVConnListener listener;
@@ -25,6 +26,7 @@ namespace OarsTests
         [SetUp]
         public void SetUp()
         {
+            connectedEndpoint = null;
             eventBase = new EventBase();
             listener = new EVConnListener(eventBase, TestEndPoint, TestBacklog);
             listener.ConnectionAccepted += ConnectionAccepted;
@@ -43,10 +45,7 @@ namespace OarsTests
         [Test]
         public void Connect()
         {
-            var dispatch = new Thread(new ThreadStart(() => {
-                eventBase.Dispatch();
-            }));
-            dispatch.Start();
+            var dispatch = eventBase.StartDispatchOnNewThread();
 
             client.Connect(TestEndPoint);
             eventBase.LoopExit(TimeSpan.FromSeconds(1));
