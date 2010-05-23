@@ -1,0 +1,6 @@
+syntax: glob
+
+bin
+obj
+*.csproj.user
+*.suo
