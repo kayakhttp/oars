@@ -25,6 +25,11 @@ namespace Oars.Core
         {
             return new TimeSpan(tv_usec * 10L + tv_sec * 10000000L);
         }
+
+        public DateTime ToDateTime()
+        {
+            return new DateTime(1970, 1, 1).AddSeconds(tv_sec).AddMilliseconds(tv_usec / 1000);
+        }
     }
 
     // represents an IPv4 end point

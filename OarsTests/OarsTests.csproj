@@ -57,9 +57,10 @@
     <Compile Include="EVBufferTests.cs" />
     <Compile Include="EVConnListenerTests.cs" />
     <Compile Include="EventBaseTests.cs" />
+    <Compile Include="EventTests.cs" />
+    <Compile Include="InteropTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TimevalTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Oars\Oars.csproj">

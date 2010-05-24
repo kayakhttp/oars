@@ -60,10 +60,7 @@ namespace Oars.Core
             if (event_base_gettimeofday_cached(Handle, out tv) < 0)
                 throw new Exception("event_core failed to get time!");
 
-            var dt = new DateTime(1970, 1, 1);
-            dt.AddSeconds(tv.tv_sec);
-            dt.AddMilliseconds(tv.tv_usec / 1000);
-            return dt;
+            return tv.ToDateTime();
         }
 
         public bool GotExit
