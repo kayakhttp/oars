@@ -47,10 +47,13 @@ namespace OarsTests
         {
             var dispatch = eventBase.StartDispatchOnNewThread();
 
+            //Console.WriteLine("About to connect.");
             client.Connect(TestEndPoint);
+            //Console.WriteLine("Connected.");
             eventBase.LoopExit(TimeSpan.FromSeconds(1));
+            //Console.WriteLine("Waiting for dispatch to join.");
             dispatch.Join();
-
+            //Console.WriteLine("Dispatch joined.");
             Assert.IsNotNull(connectedEndpoint, "Connection failed.");
 
             // something fishy going on here...seems like mono might be fudging the numbers somewhere underneath...
@@ -62,6 +65,7 @@ namespace OarsTests
 
         void ConnectionAccepted(object sender, ConnectionAcceptedEventArgs e)
         {
+            //Console.WriteLine("Got connection event.");
             connectedEndpoint = e.RemoteEndPoint;
         }
     }

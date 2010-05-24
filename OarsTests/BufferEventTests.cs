@@ -22,6 +22,7 @@ namespace OarsTests
         TcpClient client;
         MemoryStream readData;
         bool error;
+        bool writeTest;
 
         [SetUp]
         public void SetUp()
@@ -64,6 +65,33 @@ namespace OarsTests
             Assert.AreEqual(testString, readString);
         }
 
+        [Test]
+        public void TestWrite()
+        {
+            writeTest = true;
+
+            var dispatch = eventBase.StartDispatchOnNewThread();
+ 
+            client.Connect(EVConnListenerTests.TestEndPoint);
+            //Console.WriteLine("Connected.");
+
+            var stream = client.GetStream();
+            
+            byte[] recievedData = new byte[testData.Length];
+            //Console.WriteLine("About to read.");
+            stream.Read(recievedData, 0, recievedData.Length);
+            //Console.Write("Read some data.");
+
+            // if this works, then the network hardware would have to say that it was written
+            // before the read completes.
+            dispatch.Join();
+            //Console.Write("Dispatch joined.");
+
+            var recievedString = Encoding.UTF8.GetString(recievedData);
+
+            Assert.AreEqual(testString, recievedString);
+        }
+
         void ConnectionAccepted(object sender, ConnectionAcceptedEventArgs e)
         {
             bufferEvent = new BufferEvent(eventBase, e.Socket);
@@ -71,11 +99,18 @@ namespace OarsTests
             bufferEvent.Write += Write;
             bufferEvent.Event += Event;
             bufferEvent.Enable();
+
+            if (writeTest)
+            {
+                EVBuffer output = bufferEvent.Output;
+                output.Add(testData, 0, testData.Length);
+                //Console.WriteLine("added data");
+            }
         }
 
         void Write(object sender, EventArgs e)
         {
-            //throw new NotImplementedException();
+            eventBase.LoopExit();
         }
 
         void Read(object sender, EventArgs e)
