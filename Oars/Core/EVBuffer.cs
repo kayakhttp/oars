@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.ComponentModel;
 
 namespace Oars.Core
 {
@@ -41,6 +42,9 @@ namespace Oars.Core
 
         public int Remove(byte[] data, int offset, int count)
         {
+            if (offset + count > data.Length)
+                throw new Exception("offset + count > data.Length");
+
             var c = new IntPtr(count);
 
             unsafe {
@@ -52,6 +56,39 @@ namespace Oars.Core
         public int Remove(EVBuffer buffer, int len)
         {
             return evbuffer_remove_buffer(handle, buffer.handle, len);
+        }
+
+        public int Read(IntPtr fd, int count, out bool wouldBlock)
+        {
+            wouldBlock = false;
+            var result = evbuffer_read(handle, fd, count);
+
+            if (result < 0)
+            {
+                // reads the C std lib 'errno' value, even on Unix/Mono
+                var error = Marshal.GetLastWin32Error();
+
+                // if we wanted to support windows, we would check for WSAEWOULDBLOCK
+                if (error == (int)Errno.EAGAIN)
+                    wouldBlock = true;
+            }
+
+            return result;
+        }
+
+        public int Write(IntPtr fd, int count, out bool wouldBlock)
+        {
+            wouldBlock = false;
+            var result = evbuffer_write_atmost(handle, fd, count);
+
+            if (result < 0)
+            {
+                result = 0;
+                if (Marshal.GetLastWin32Error() == (int)Errno.EAGAIN)
+                    wouldBlock = true;
+            }
+
+            return result;
         }
 
         #region interop
@@ -79,6 +116,12 @@ namespace Oars.Core
 
         [DllImport("event_core")]
         private static extern int evbuffer_get_length(IntPtr buf);
+
+        [DllImport("event_core", SetLastError = true)]
+        private static extern int evbuffer_read(IntPtr buf, IntPtr sock, int count);
+
+        [DllImport("event_core", SetLastError = true)]
+        private static extern int evbuffer_write_atmost(IntPtr buf, IntPtr sock, int count);
 
         #endregion
     }

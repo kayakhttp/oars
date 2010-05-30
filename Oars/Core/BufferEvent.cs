@@ -60,6 +60,7 @@ namespace Oars.Core
             bev = bufferevent_socket_new(eventBase.Handle, socket, options);
             //Console.WriteLine("bufferevent_socket_new returned " + bev.ToInt32());
 
+            // none of these can throw exceptions.
             var readCb = Marshal.GetFunctionPointerForDelegate(new bufferevent_data_cb(ReadCallbackInternal));
             var writeCb = Marshal.GetFunctionPointerForDelegate(new bufferevent_data_cb(WriteCallbackInternal));
             var eventCb = Marshal.GetFunctionPointerForDelegate(new bufferevent_event_cb(EventCallbackInternal));
@@ -79,20 +80,44 @@ namespace Oars.Core
 
         void ReadCallbackInternal(IntPtr bev, IntPtr ctx)
         {
-            if (Read != null)
-                Read(this, EventArgs.Empty);
+            try
+            {
+                if (Read != null)
+                    Read(this, EventArgs.Empty);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("A handler of BufferEvent.Read threw an exception.");
+                Console.WriteLine(string.Format("[{0}] {1}\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+            }
         }
 
         void WriteCallbackInternal(IntPtr bev, IntPtr ctx)
         {
-            if (Write != null)
-                Write(this, EventArgs.Empty);
+            try
+            {
+                if (Write != null)
+                    Write(this, EventArgs.Empty);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("A handler of BufferEvent.Write threw an exception.");
+                Console.WriteLine(string.Format("[{0}] {1}\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+            }
         }
 
         void EventCallbackInternal(IntPtr bev, short what, IntPtr ctx)
         {
-            if (Event != null)
-                Event(this, new BufferEventEventArgs((BufferEventEvents)what));
+            try
+            {
+                if (Event != null)
+                    Event(this, new BufferEventEventArgs((BufferEventEvents)what));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("A handler of BufferEvent.Event threw an exception.");
+                Console.WriteLine(string.Format("[{0}] {1}\n{2}", e.GetType().Name, e.Message, e.StackTrace));
+            }
         }
 
         #region interop

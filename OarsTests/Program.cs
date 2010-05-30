@@ -10,7 +10,7 @@ namespace OarsTests
     {
         public static void Main(string[] args)
         {
-            NUnit.ConsoleRunner.Runner.Main(new string[] { Assembly.GetExecutingAssembly().Location, "-noshadow", "-labels" });
+            NUnit.ConsoleRunner.Runner.Main(new string[] { Assembly.GetExecutingAssembly().Location, "-noshadow" }.Concat(args).ToArray());
         }
     }
 }

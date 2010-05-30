@@ -10,7 +10,7 @@ using System.IO;
 
 namespace OarsTests
 {
-    [TestFixture]
+    //[TestFixture]
     public class BufferEventTests
     {
         static string testString = "OMG THIS IS TEST DATA WTF";

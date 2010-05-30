@@ -9,23 +9,6 @@ using Oars.Core;
 
 namespace Oars
 {
-    public class BufferEventSocket : IDisposable
-    {
-        public BufferEvent BufferEvent { get; set; }
-        public IPEndPoint RemoteEP { get; set; }
-
-        public BufferEventSocket(EventBase eventBase, IntPtr socket, IPEndPoint remoteEndpoint)
-        {
-            RemoteEP = remoteEndpoint;
-            BufferEvent = new BufferEvent(eventBase, socket);
-        }
-
-        public void Dispose()
-        {
-            BufferEvent.Dispose();
-        }
-    }
-
     public class BufferEventStream : Stream
     {
         class AsyncResult : IAsyncResult
@@ -34,7 +17,7 @@ namespace Oars
             public object AsyncState { get; internal set; }
             public WaitHandle AsyncWaitHandle { get { return null; } }
             public bool CompletedSynchronously { get; private set; }
-            
+
             internal AsyncCallback Callback { get; set; }
 
             internal void InvokeCallback(bool synchronous)
@@ -53,19 +36,21 @@ namespace Oars
             public int bytesRead;
         }
 
-        BufferEventSocket socket;
+        BufferEvent bufferEvent;
 
         ReadAsyncResult readResult;
         AsyncResult writeResult;
 
-        bool gotEndOfFile;
+        bool gotEndOfFile, ownsBufferEvent;
 
-        public BufferEventStream(BufferEventSocket socket)
+        public BufferEventStream(BufferEvent bufferEvent) : this(bufferEvent, true) { }
+        public BufferEventStream(BufferEvent bufferEvent, bool ownsBufferEvent)
         {
-            this.socket = socket;
-            socket.BufferEvent.Event += bufferEvent_Event;
-            socket.BufferEvent.Read += bufferEvent_Read;
-            socket.BufferEvent.Write += bufferEvent_Write;
+            this.bufferEvent = bufferEvent;
+            this.ownsBufferEvent = ownsBufferEvent;
+            bufferEvent.Event += bufferEvent_Event;
+            bufferEvent.Read += bufferEvent_Read;
+            bufferEvent.Write += bufferEvent_Write;
         }
 
         void bufferEvent_Event(object sender, BufferEventEventArgs e)
@@ -74,8 +59,9 @@ namespace Oars
             Console.WriteLine("got event " + what.ToString());
             if ((what & BufferEventEvents.EOF) > 0)
                 InvokeReadCallbackIfNecessary(false);
+            //if ((what & BufferEventEvents.Error) > 0)  
+            // TODO throw on next access?
 
-            // TODO got any errors, throw on next access?
         }
 
         void InvokeReadCallbackIfNecessary(bool synchronous)
@@ -85,13 +71,13 @@ namespace Oars
             else
             {
                 // TODO if -1, there was an error!
-                var bytesToRead = Math.Min(readResult.count, socket.BufferEvent.Input.Length);
-                readResult.bytesRead = socket.BufferEvent.Input.Remove(readResult.buffer, readResult.offset, bytesToRead);
+                var bytesToRead = Math.Min(readResult.count, bufferEvent.Input.Length);
+                readResult.bytesRead = bufferEvent.Input.Remove(readResult.buffer, readResult.offset, bytesToRead);
 
                 if (readResult.bytesRead == 0 && !gotEndOfFile)
                     return; // wait for next callback
             }
-            
+
             readResult.InvokeCallback(synchronous);
         }
 
@@ -155,7 +141,7 @@ namespace Oars
                 AsyncState = state
             };
 
-            socket.BufferEvent.Output.Add(buffer, offset, count);
+            bufferEvent.Output.Add(buffer, offset, count);
 
             return writeResult;
         }
@@ -170,7 +156,13 @@ namespace Oars
 
         public override void Close()
         {
-            socket.Dispose();
+            if (ownsBufferEvent)
+                bufferEvent.Dispose();
+        }
+
+        public void Dispose()
+        {
+            Close();
         }
 
         public override void Flush() { throw new NotSupportedException("BufferEvent does not need to be flushed. When a(n) async/sync write call completes/returns, it's done (the underlying bev notifies us after its buffer has been emptied)."); }

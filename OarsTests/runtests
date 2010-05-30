@@ -1,1 +1,1 @@
-mono bin/Debug/OarsTests.exe
+mono bin/Debug/OarsTests.exe "$@"

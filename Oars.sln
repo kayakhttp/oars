@@ -11,14 +11,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DD0C9BC5-4181-4ADC-92EB-9E638C9C38A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DD0C9BC5-4181-4ADC-92EB-9E638C9C38A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DD0C9BC5-4181-4ADC-92EB-9E638C9C38A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DD0C9BC5-4181-4ADC-92EB-9E638C9C38A8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{66CE5C21-69D5-4AB2-B145-32F1149845BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{66CE5C21-69D5-4AB2-B145-32F1149845BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66CE5C21-69D5-4AB2-B145-32F1149845BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66CE5C21-69D5-4AB2-B145-32F1149845BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD0C9BC5-4181-4ADC-92EB-9E638C9C38A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD0C9BC5-4181-4ADC-92EB-9E638C9C38A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD0C9BC5-4181-4ADC-92EB-9E638C9C38A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD0C9BC5-4181-4ADC-92EB-9E638C9C38A8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = OarsTests\OarsTests.csproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

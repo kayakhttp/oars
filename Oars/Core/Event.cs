@@ -20,6 +20,7 @@ namespace Oars.Core
     public class Event : IDisposable
     {
         public IntPtr Handle { get; private set; }
+        public Events Events { get; private set; }
 
         public event EventHandler Activated;
         bool pending;
@@ -71,8 +72,12 @@ namespace Oars.Core
 
         void EventCallbackInternal(IntPtr fd, short what, IntPtr ctx) 
         {
+            Events = (Events)what;
+
             if (Activated != null)
                 Activated(this, EventArgs.Empty);
+
+            Events = Events.None;
         }
 
         void ThrowIfDisposed()
