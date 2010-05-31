@@ -70,6 +70,7 @@ namespace Oars
             if (readGotEOF)
                 readResult.InvokeCallback(true);
 
+            //Console.WriteLine("Adding read event.");
             readEvent.Add(readTimeout);
 
             return readResult;
@@ -88,8 +89,11 @@ namespace Oars
             bool wouldBlock;
 
             var bytesToRead = readResult.count - readResult.bytesRead;
+            
+            // get bytes off the network.
             var bytesRead = readBuffer.Read(handle, bytesToRead, out wouldBlock);
             readResult.bytesRead += bytesRead;
+
             //Console.WriteLine("read " + bytesRead + " bytes");
             //Console.WriteLine("buffer length is " + readBuffer.Length);
 
@@ -107,7 +111,9 @@ namespace Oars
             // copy to managed memory (that's the price we pay for living in our walled garden...)
             readBuffer.Remove(readResult.buffer, readResult.offset, readResult.bytesRead);
 
+            // no more notifications until user expresses interest (BeginRead())
             readEvent.Delete();
+
             //Console.WriteLine("Invoking read callback.");
             readResult.InvokeCallback(false);
         }
@@ -157,7 +163,7 @@ namespace Oars
             {
                 AsyncState = state,
                 Callback = callback,
-                count = buffer.Length
+                count = count
             };
 
             writeEvent.Add(writeTimeout);

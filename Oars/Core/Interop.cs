@@ -129,6 +129,17 @@ namespace Oars.Core
 		}
     }
 
+    static class FDExtensions
+    {
+        [DllImport("libc")]
+        static extern int close(IntPtr fd);
+
+        public static int Close(this IntPtr fd)
+        {
+            return close(fd);
+        }
+    }
+
     // lifted this from Mono.Unix/Stdlib.cs
     public enum Errno : int
     {

@@ -67,6 +67,7 @@ namespace Oars.Core
             {
                 // reads the C std lib 'errno' value, even on Unix/Mono
                 var error = Marshal.GetLastWin32Error();
+                Console.WriteLine("Got errno " + error +".");
 
                 // if we wanted to support windows, we would check for WSAEWOULDBLOCK
                 if (error == (int)Errno.EAGAIN)
