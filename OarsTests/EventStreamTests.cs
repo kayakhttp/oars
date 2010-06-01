@@ -57,7 +57,6 @@ namespace OarsTests
                 listener.ConnectionAccepted += ReadConnectionAccepted;
             }, () =>
             {
-
                 listener.ConnectionAccepted -= ReadConnectionAccepted;
             });
 
@@ -72,6 +71,7 @@ namespace OarsTests
 
             //Console.WriteLine("Waiting for server thread to join.");
             dispatch.Join();
+            dispatch = null;
             //Console.WriteLine("Server thread joined.");
 
             Assert.IsNotNull(connectedSocket, "Never got connection.");
@@ -110,15 +110,16 @@ namespace OarsTests
             var n = stream.EndRead(iasr);
             serverPosition += n;
             //Console.WriteLine("Stream read " + n + " bytes.");
-            //Console.WriteLine("The first byte was " + readBuffer.First());
             readDestinationBuffer.Write(intermediateBuffer, 0, n);
 
             readZeroBytes = n == 0;
 
             if (readZeroBytes || serverPosition > testString.Length)
             {
+                //Console.WriteLine("Closing socket.");
+                stream.Dispose();
+                connectedSocket.Close();
                 //Console.WriteLine("Exiting loop.");
-                // TODO what becomes of the socket?
                 eventBase.LoopExit();
             }
             else
@@ -131,6 +132,7 @@ namespace OarsTests
         [Test]
         public void Write()
         {
+            //Console.WriteLine("Write test began.");
             writeSourceBuffer = new MemoryStream(Encoding.UTF8.GetBytes(testString));
             readDestinationBuffer = new MemoryStream();
 
@@ -181,6 +183,7 @@ namespace OarsTests
             else
             {
                 //Console.WriteLine("closing socket.");
+                stream.Dispose();
                 connectedSocket.Close();
                 eventBase.LoopExit();
             }
@@ -203,9 +206,10 @@ namespace OarsTests
 
             while (true)
             {
+                //Console.WriteLine("About to read from server.");
                 var n = stream.Read(buffer, 0, buffer.Length);
-
                 //Console.WriteLine("Read " + n + " bytes from server.");
+
                 if (n == 0)
                     break;
 

@@ -34,7 +34,7 @@ namespace Oars.Core
         {
             ThrowIfDisposed();
 
-            if (!pending)
+            if (pending)
                 Delete();
 
             event_free(Handle);
