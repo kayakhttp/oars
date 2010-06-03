@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
@@ -11,7 +10,7 @@ namespace OarsTests
     [TestFixture]
     public class EventTests
     {
-        Event ev1, ev2, ev3;
+        EVEvent ev1, ev2, ev3;
         EventBase eventBase;
         DateTime added, activated;
         bool ev1Activated, ev2Activated, ev3Activated;
@@ -33,7 +32,7 @@ namespace OarsTests
         {
             var intendedDuration = TimeSpan.FromMilliseconds(500);
 
-            ev1 = new EventTimer(eventBase);
+            ev1 = EVEvent.CreateTimer(eventBase);
 
             var dispatch = eventBase.StartDispatchOnNewThread(() =>
             {
@@ -75,11 +74,11 @@ namespace OarsTests
             var removeTimeout = TimeSpan.FromMilliseconds(250);
             var timeoutToBeRemoved = TimeSpan.FromMilliseconds(375);
 
-            ev1 = new EventTimer(eventBase);
+            ev1 = EVEvent.CreateTimer(eventBase);
             ev1.Activated += new EventHandler(Ev1Activated);
-            ev2 = new EventTimer(eventBase);
+            ev2 = EVEvent.CreateTimer(eventBase);
             ev2.Activated += new EventHandler(Ev2Activated);
-            ev3 = new EventTimer(eventBase);
+            ev3 = EVEvent.CreateTimer(eventBase);
             ev3.Activated += new EventHandler(Ev3Activated);
 
             var dispatch = eventBase.StartDispatchOnNewThread(() => {

@@ -36,22 +36,15 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\EVBuffer.cs" />
     <Compile Include="Core\BufferEvent.cs" />
     <Compile Include="Core\EVConnListener.cs" />
-    <Compile Include="Core\Event.cs" />
     <Compile Include="Core\EventBase.cs" />
+    <Compile Include="Core\EVEvent.cs" />
     <Compile Include="Core\Interop.cs" />
+    <Compile Include="EventServer.cs" />
     <Compile Include="EventStream.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

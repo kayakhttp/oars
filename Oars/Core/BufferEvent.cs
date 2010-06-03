@@ -10,7 +10,7 @@ namespace Oars.Core
         Finished = 2
     }
 
-    public class BufferEventEventArgs : EventArgs
+    public sealed class BufferEventEventArgs : EventArgs
     {
         public BufferEventEvents Events { get; private set; }
 
@@ -20,7 +20,7 @@ namespace Oars.Core
         }
     }
 
-    public class BufferEvent : IDisposable
+    public sealed class BufferEvent : IDisposable
     {
         public EventBase EventBase { get; private set; }
         IntPtr bev;

@@ -18,6 +18,7 @@ namespace Oars
         {
             return eventbase.StartDispatchOnNewThread(before, null);
         }
+
         public static Thread StartDispatchOnNewThread(this EventBase eventBase, Action before, Action after)
         {
             var dispatch = new Thread(new ThreadStart(() =>
@@ -29,6 +30,30 @@ namespace Oars
                     after();
             }));
             dispatch.Start();
+            return dispatch;
+        }
+
+        public static Thread StartLoopOnNewThread(this EventBase eventBase, Action before, Func<bool> preLoop, Func<bool> postLoop, Action after)
+        {
+            var dispatch = new Thread(new ThreadStart(() =>
+            {
+                if (before != null)
+                    before();
+
+                while (true)
+                {
+                    if (preLoop())
+                        break;
+
+                    eventBase.Loop(LoopOptions.NonBlock | LoopOptions.Once);
+
+                    if (postLoop())
+                        break;
+                }
+
+                if (after != null)
+                    after();
+                }));
             return dispatch;
         }
     }

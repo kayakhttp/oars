@@ -6,7 +6,13 @@ using System.Runtime.InteropServices;
 
 namespace Oars.Core
 {
-    public class EventBase : IDisposable
+    public enum LoopOptions : int
+    {
+        Once = 0x01,
+        NonBlock = 0x02
+    }
+
+    public sealed class EventBase : IDisposable
     {
         public IntPtr Handle { get; private set; }
 
@@ -20,6 +26,11 @@ namespace Oars.Core
             ThrowIfDisposed();
 
             event_base_dispatch(Handle);
+        }
+
+        public void Loop(LoopOptions options)
+        {
+            event_base_loop(Handle, (int)options);
         }
 
         public bool LoopExit()
@@ -95,6 +106,9 @@ namespace Oars.Core
 
         [DllImport("event_core")]
         private static extern int event_base_dispatch(IntPtr event_base);
+
+        [DllImport("event_core")]
+        private static extern int event_base_loop(IntPtr event_base, int flags);
 
         [DllImport("event_core")]
         private static extern int event_base_loopexit(IntPtr event_base, ref timeval timeval);

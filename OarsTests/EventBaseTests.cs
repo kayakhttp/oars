@@ -104,7 +104,7 @@ namespace OarsTests
 
         void AddEvent()
         {
-            EventTimer timer = new EventTimer(eventBase);
+            EVEvent timer = EVEvent.CreateTimer(eventBase);
             timer.Add(TimeSpan.FromSeconds(1));
         }
     }

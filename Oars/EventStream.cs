@@ -10,12 +10,15 @@ using System.Runtime.InteropServices;
 
 namespace Oars
 {
-    public class EventStream : Stream
+    /// <summary>
+    /// An asynchronous stream implemented in terms of libevent.
+    /// </summary>
+    public sealed class EventStream : Stream
     {
         EventBase eventBase;
         IntPtr handle;
         FileAccess fileAccess;
-        Event readEvent, writeEvent;
+        EVEvent readEvent, writeEvent;
         EVBuffer readBuffer, writeBuffer;
         WriteAsyncResult writeResult;
         ReadAsyncResult readResult;
@@ -32,7 +35,7 @@ namespace Oars
 
         void InitReading()
         {
-            readEvent = new Event(eventBase, handle, Events.EV_READ);
+            readEvent = new EVEvent(eventBase, handle, Events.EV_READ);
             readEvent.Activated += ReadEventActivated;
             readEvent.Add(readTimeout);
 
@@ -147,7 +150,7 @@ namespace Oars
 
         void InitWriting()
         {
-            writeEvent = new Event(eventBase, handle, Events.EV_WRITE);
+            writeEvent = new EVEvent(eventBase, handle, Events.EV_WRITE);
             writeEvent.Activated += WriteEventActivated;
             //Console.WriteLine("About to add write event.");
             writeEvent.Add(writeTimeout);
@@ -233,13 +236,20 @@ namespace Oars
             writeResult = null;
         }
 
-        public override void Close()
+        public void Dispose()
         {
             if (readEvent != null)
                 CleanupReading();
 
             if (writeEvent != null)
                 CleanupWriting();
+        }
+
+        bool disposed;
+        void ThrowIfDisposed()
+        {
+            if (disposed)
+                throw new ObjectDisposedException("EventStream");
         }
 
         public override bool CanRead
@@ -280,23 +290,23 @@ namespace Oars
 
         public override void Flush()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public override long Length
         {
-            get { throw new NotImplementedException(); }
+            get { throw new NotSupportedException(); }
         }
 
         public override long Position
         {
             get
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
             set
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
         }
 

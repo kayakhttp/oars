@@ -12,12 +12,12 @@ namespace Oars.Core
         EV_TIMEOUT = 0x01,
         EV_READ = 0x02,
         EV_WRITE = 0x04,
-        EV_SIGNAL = 0x08//,
-        //EV_PERSIST = 0x10,
+        EV_SIGNAL = 0x08,
+        EV_PERSIST = 0x10//,
         //EV_ET = 0x20,
     }
 
-    public class Event : IDisposable
+    public sealed class EVEvent : IDisposable
     {
         public IntPtr Handle { get; private set; }
         public Events Events { get; private set; }
@@ -25,7 +25,17 @@ namespace Oars.Core
         public event EventHandler Activated;
         bool pending;
 
-        public Event(EventBase eventBase, IntPtr fd, Events what)
+        public static EVEvent CreateTimer(EventBase eventBase)
+        {
+            return CreateTimer(eventBase, false);
+        }
+
+        public static EVEvent CreateTimer(EventBase eventBase, bool persist)
+        {
+            return new EVEvent(eventBase, new IntPtr(-1), persist ? Events.EV_PERSIST : Events.None);
+        }
+
+        public EVEvent(EventBase eventBase, IntPtr fd, Events what)
         {
             Handle = event_new(eventBase.Handle, fd, (short)what, Marshal.GetFunctionPointerForDelegate(new event_callback_fn(EventCallbackInternal)), IntPtr.Zero);
         }
@@ -102,10 +112,5 @@ namespace Oars.Core
 
         [DllImport("event_core")]
         static extern int event_priority_set(IntPtr evnt, int priority);
-    }
-
-    public class EventTimer : Event
-    {
-        public EventTimer(EventBase eventBase) : base(eventBase, new IntPtr(-1), Events.None) { }
     }
 }

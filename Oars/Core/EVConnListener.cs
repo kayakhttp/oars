@@ -8,7 +8,7 @@ using System.Net.Sockets;
 
 namespace Oars.Core
 {
-    public class ConnectionAcceptedEventArgs : EventArgs
+    public sealed class ConnectionAcceptedEventArgs : EventArgs
     {
         public IntPtr Socket { get; private set; }
         public IPEndPoint RemoteEndPoint { get; private set; }
@@ -20,7 +20,7 @@ namespace Oars.Core
         }
     }
 
-    public class EVConnListener : IDisposable
+    public sealed class EVConnListener : IDisposable
     {
         public event EventHandler<ConnectionAcceptedEventArgs> ConnectionAccepted;
         public EventBase Base { get; set; }

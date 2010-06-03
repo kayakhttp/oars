@@ -8,7 +8,7 @@ using System.ComponentModel;
 
 namespace Oars.Core
 {
-    public class EVBuffer : IDisposable
+    public sealed class EVBuffer : IDisposable
     {
         IntPtr handle;
         bool ownsBuffer;
