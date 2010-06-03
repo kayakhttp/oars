@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using Oars.Core;
 
@@ -25,7 +22,9 @@ namespace Oars
             {
                 if (before != null)
                     before();
+
                 eventBase.Dispatch();
+
                 if (after != null)
                     after();
             }));

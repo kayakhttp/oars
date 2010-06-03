@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Oars.Core;
+using System.IO;
 using System.Net;
 using System.Threading;
-using System.IO;
+using Oars.Core;
 
 namespace Oars
 {
@@ -117,7 +114,7 @@ namespace Oars
     }
 
     /// <summary>
-    /// A TCP connection that supports an eventful network stream. Don't forget to Close()!
+    /// A TCP connection that supports an eventful network stream. Don't forget to call Dispose()!
     /// </summary>
     public class Connection : IDisposable
     {
@@ -141,7 +138,7 @@ namespace Oars
 
         /// <summary>
         /// Returns an EventStream schudeled on the EventBase of the server that generated the connection.
-        /// Don't forget to dispose!
+        /// Don't forget to dispose it!
         /// </summary>
         public EventStream GetStream()
         {

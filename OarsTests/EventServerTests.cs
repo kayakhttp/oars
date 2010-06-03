@@ -115,14 +115,14 @@ namespace OarsTests
                                 {
                                     //Console.WriteLine("Server read " + bytesRead + " bytes. Closing connection.");
                                     bytesReadFromFinalConnection = bytesRead;
-                                    e.EventArgs.Connection.Close();
+                                    e.EventArgs.Connection.Dispose();
                                     //Console.WriteLine("Closed connection.");
                                 });
                     }
                     else
                     {
                         //Console.WriteLine("Server closing connection.");
-                        e.EventArgs.Connection.Close();
+                        e.EventArgs.Connection.Dispose();
                     }
                 });
 			
