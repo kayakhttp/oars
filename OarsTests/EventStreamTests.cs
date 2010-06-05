@@ -12,7 +12,7 @@ using System.Threading;
 namespace OarsTests
 {
     [TestFixture]
-    public class BufferEventStreamTests
+    public class EventStreamTests
     {
         string readFile = "readTest.dat", writeFile = "writeTest.dat";
 
@@ -28,8 +28,6 @@ namespace OarsTests
         int serverPosition, numBytesToWrite;
         byte[] intermediateBuffer;
         MemoryStream readDestinationBuffer, writeSourceBuffer;
-
-
 
         [SetUp]
         public void SetUp()
@@ -127,7 +125,6 @@ namespace OarsTests
         }
 
         #endregion
-
 
         [Test]
         public void Write()
@@ -234,5 +231,6 @@ namespace OarsTests
         }
 
         #endregion
+
     }
 }

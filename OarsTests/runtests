@@ -1,1 +1,9 @@
+if [ `uname` = 'Darwin' ]; then
+
+    dir=`dirname $0`
+    cd $dir
+    path=`pwd` 
+    export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$path/../Oars/lib/
+fi
+echo $DYLD_LIBRARY_PATH
 mono bin/Debug/OarsTests.exe "$@"
