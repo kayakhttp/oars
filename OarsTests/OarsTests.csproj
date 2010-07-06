@@ -39,6 +39,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Observable, Version=1.0.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\System.Observable.dll</HintPath>
@@ -53,6 +54,7 @@
       <HintPath>lib\System.CoreEx.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -65,7 +67,6 @@
     <Compile Include="EVBufferTests.cs" />
     <Compile Include="EVConnListenerTests.cs" />
     <Compile Include="EventBaseTests.cs" />
-    <Compile Include="EventServerTests.cs" />
     <Compile Include="EventStreamTests.cs" />
     <Compile Include="EVEventTests.cs" />
     <Compile Include="InteropTests.cs" />

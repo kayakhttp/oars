@@ -16,11 +16,14 @@ namespace Oars.Core
 
     public sealed class EVEvent : IDisposable
     {
+        IntPtr fd;
+        IntPtr fp;
         public IntPtr Handle { get; private set; }
         public Events Events { get; private set; }
 
         public event EventHandler Activated;
         bool pending;
+        Delegate cb;
 
         public static EVEvent CreateTimer(EventBase eventBase)
         {
@@ -34,11 +37,17 @@ namespace Oars.Core
 
         public EVEvent(EventBase eventBase, IntPtr fd, Events what)
         {
-            Handle = event_new(eventBase.Handle, fd, (short)what, Marshal.GetFunctionPointerForDelegate(new event_callback_fn(EventCallbackInternal)), IntPtr.Zero);
+            this.fd = fd;
+            cb = Delegate.CreateDelegate(typeof(event_callback_fn), this, "EventCallbackInternal");
+
+            fp = Marshal.GetFunctionPointerForDelegate(cb);
+            Trace.Write("EVEvent created with fd " + fd.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
+            Handle = event_new(eventBase.Handle, fd, (short)what, fp, IntPtr.Zero);
         }
 
         public void Dispose()
         {
+            Trace.Write("EVEvent disposed with fd " + fd.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
             ThrowIfDisposed();
 
             if (pending)
@@ -81,8 +90,16 @@ namespace Oars.Core
         {
             Events = (Events)what;
 
-            if (Activated != null)
-                Activated(this, EventArgs.Empty);
+            try
+            {
+                Trace.Write("Event on fd {0} activated with events {1}.", fd.ToInt32(), Events);
+                if (Activated != null)
+                    Activated(this, EventArgs.Empty);
+            }
+            catch (Exception e)
+            {
+                Extensions.HandleException("EVEvent event callback", e);
+            }
 
             Events = Events.None;
         }

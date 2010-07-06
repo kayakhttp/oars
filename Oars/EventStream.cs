@@ -7,6 +7,7 @@ namespace Oars
 {
     /// <summary>
     /// An asynchronous stream implemented in terms of libevent.
+    /// TODO: optimize writes, zero-copy file send
     /// </summary>
     public sealed class EventStream : Stream
     {
@@ -18,7 +19,7 @@ namespace Oars
         WriteAsyncResult writeResult;
         ReadAsyncResult readResult;
         TimeSpan readTimeout, writeTimeout;
-        bool readGotEOF;
+        bool readGotEOF, gotWriteTimeout, gotReadTimeout;
 
         public EventStream(EventBase eventBase, IntPtr handle, FileAccess fileAccess)
         {
@@ -30,6 +31,7 @@ namespace Oars
 
         void InitReading()
         {
+            Trace.Write("Adding read event.");
             readEvent = new EVEvent(eventBase, handle, Events.EV_READ);
             readEvent.Activated += ReadEventActivated;
             readEvent.Add(readTimeout);
@@ -39,9 +41,11 @@ namespace Oars
 
         void CleanupReading()
         {
+            Trace.Write("Releasing read event and buffer.");
             readEvent.Activated -= ReadEventActivated;
             // auto-deletes the event.
             readEvent.Dispose();
+            readEvent = null;
 
             readBuffer.Dispose();
         }
@@ -66,10 +70,11 @@ namespace Oars
                 count = count
             };
 
-            //Console.WriteLine("BeginRead");
+            Trace.Write("BeginRead");
+
             if (readGotEOF || DoRead())
             {
-                //Console.WriteLine("Invoking read callback synchronously.");
+                Trace.Write("Invoking read callback synchronously.");
                 readResult.InvokeCallback(true);
             }
 
@@ -78,18 +83,25 @@ namespace Oars
 
         void ReadEventActivated(object sender, EventArgs e)
         {
-            //Console.WriteLine("Read event activated!");
-            //Console.WriteLine("Events were: " + readEvent.Events);
+            Trace.Write("Read event activated!");
+
+            if (readResult == null)
+            {
+                Trace.Write("No read pending, discarding event.");
+                return;
+            }
+
             if ((readEvent.Events & Events.EV_TIMEOUT) > 0)
             {
-                Console.WriteLine("Got timeout!");
-                return; // TODO handle timeout
+                Trace.Write("Got read timeout!");
+                gotReadTimeout = true;
+                readResult.InvokeCallback(false);
+                return;
             }
-            //Console.WriteLine("eh?");
 
-            if (readResult != null && DoRead())
+            if (DoRead())
             {
-                //Console.WriteLine("Invoking read callback.");
+                Trace.Write("Invoking read callback.");
                 readResult.InvokeCallback(false);
             }
         }
@@ -98,34 +110,35 @@ namespace Oars
         {
             bool wouldBlock;
 
-            //Console.WriteLine("meh?");
             //Console.WriteLine("readResult == null?: "+ (readResult == null));
             var bytesToRead = readResult.count - readResult.bytesRead;
 
             // get bytes off the network.
-            //Console.WriteLine("About to read " + bytesToRead + " from socket.");
+            Trace.Write("About to read " + bytesToRead + " from socket into buffer.");
+
             var bytesRead = readBuffer.Read(handle, bytesToRead, out wouldBlock);
-
-            //Console.WriteLine("would block? " + wouldBlock);
-
-            if (wouldBlock)
+            
+            if (wouldBlock || bytesRead == -1)
             {
-                // TODO shouldn't happen/handle timeout?
-                //Console.WriteLine("Got EWOULDBLOCK/EAGAIN while reading, that's weird.");
+                if (wouldBlock)
+                {
+                    Trace.Write("Got EWOULDBLOCK/EAGAIN while reading, that's weird.");
+                }
+                if (bytesRead == -1)
+                {
+                    Trace.Write("Got error while reading.");
+                }
                 return false;
             }
 
             readResult.bytesRead += bytesRead;
 
-            //Console.WriteLine("read " + bytesRead + " bytes");
-            //Console.WriteLine("buffer length is " + readBuffer.Length);
+            Trace.Write("Read " + bytesRead + " bytes.");
+            Trace.Write("Buffer length is " + readBuffer.Length);
             readGotEOF = readResult.bytesRead == 0;
 
             // copy to managed memory (that's the price we pay for living in our walled garden...)
             var bytesRemoved = readBuffer.Remove(readResult.buffer, readResult.offset, readResult.bytesRead);
-
-            //Console.WriteLine("Copied " + bytesRemoved + " bytes to managed memory.");
-
 
             return true;
         }
@@ -138,8 +151,14 @@ namespace Oars
             if (readResult != asyncResult)
                 throw new ArgumentException("Bogus IAsyncResult argument.", "asyncResult");
 
+            Trace.Write("EndRead");
+
             var bytesRead = readResult.bytesRead;
             readResult = null;
+
+            if (gotReadTimeout)
+                throw new Exception("Read timed out.");
+
             return bytesRead;
         }
 
@@ -156,9 +175,11 @@ namespace Oars
 
         void CleanupWriting()
         {
+            Trace.Write("Cleaning write event and buffer.");
             writeEvent.Activated -= WriteEventActivated;
             // auto-deletes the event
             writeEvent.Dispose();
+            writeEvent = null;
 
             writeBuffer.Dispose();
         }
@@ -181,12 +202,17 @@ namespace Oars
                 count = count
             };
 
-            //Console.WriteLine("adding " + count + " bytes to output buffer.");
+            Trace.Write("adding " + count + " bytes to output buffer.");
+            // TODO this results in an unnecessary copy. look into:
+            // evbuffer_add_reference(), GCHandle.Alloc(buffer, GCHandleType.Pinned)
             writeBuffer.Add(buffer, offset, count);
             //Console.WriteLine("output buffer length is " + writeBuffer.Length);
 
             if (DoWrite())
+            {
+                Trace.Write("Invoking write callback synchronously.");
                 writeResult.InvokeCallback(true);
+            }
 
             return writeResult;
         }
@@ -196,31 +222,49 @@ namespace Oars
             bool wouldBlock = false;
             var bytesWritten = writeBuffer.Write(handle, writeBuffer.Length, out wouldBlock);
 
-            if (wouldBlock)
+            if (wouldBlock || bytesWritten == -1)
             {
-                // TODO shouldn't happen/handle timeout?
-                Console.WriteLine("Got EWOULDBLOCK/EAGAIN while writing, that's weird.");
+                if (wouldBlock)
+                {
+                    Trace.Write("Got EWOULDBLOCK/EAGAIN while writing, that's weird.");
+                }
+                if (bytesWritten == -1)
+                {
+                    Trace.Write("Got error while writing.");
+                }
                 return false;
             }
 
             writeResult.bytesWritten += bytesWritten;
 
-            return true;
+            Trace.Write("bytes written = {0}, write count = {1}", writeResult.bytesWritten, writeResult.count);
+            // i.e., writeBuffer.Length == 0
+            return writeResult.bytesWritten == writeResult.count;
         }
 
         void WriteEventActivated(object sender, EventArgs e)
         {
-            //Console.WriteLine("Write event activated!");
-            if ((writeEvent.Events & Events.EV_TIMEOUT) > 0)
+            Trace.Write("Write event activated!");
+
+            if (writeResult == null)
             {
-                Console.WriteLine("Got timeout!");
-                return; // TODO handle timeout
+                Trace.Write("No write pending, discarding event.");
+                return;
             }
 
-            //Console.WriteLine("bytesWritten = " + writeResult.bytesWritten);
-            //Console.WriteLine("count = " + writeResult.count);
-            if (writeResult.bytesWritten == writeResult.count)
+            if ((writeEvent.Events & Events.EV_TIMEOUT) > 0)
+            {
+                Trace.Write("Got write timeout!");
+                gotWriteTimeout = true;
                 writeResult.InvokeCallback(false);
+                return;
+            }
+
+            if (DoWrite())
+            {
+                Trace.Write("Invoking write callback.");
+                writeResult.InvokeCallback(false);
+            }
         }
 
         public override void EndWrite(IAsyncResult asyncResult)
@@ -229,15 +273,25 @@ namespace Oars
                 throw new ArgumentException("asyncResult");
 
             writeResult = null;
+
+            if (gotWriteTimeout)
+            {
+                gotWriteTimeout = false;
+                throw new Exception("Write timed out.");
+            }
         }
 
-        public void Dispose()
+        public override void Close()
         {
+            base.Close();
+            Trace.Write("Closing.");
             if (readEvent != null)
                 CleanupReading();
 
             if (writeEvent != null)
                 CleanupWriting();
+
+            disposed = true;
         }
 
         bool disposed;

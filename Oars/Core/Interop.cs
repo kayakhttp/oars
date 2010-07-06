@@ -30,7 +30,6 @@ namespace Oars.Core
     }
 
     // represents an IPv4 end point
-
     [StructLayout(LayoutKind.Sequential)]
     unsafe struct sockaddr_in
     {

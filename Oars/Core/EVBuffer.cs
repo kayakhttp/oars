@@ -56,17 +56,22 @@ namespace Oars.Core
         public int Read(IntPtr fd, int count, out bool wouldBlock)
         {
             wouldBlock = false;
+            Trace.Write("Attempting to read {0} bytes from socket.", count);
             var result = evbuffer_read(handle, fd, count);
 
             if (result < 0)
             {
                 // reads the C std lib 'errno' value, even on Unix/Mono
                 var error = Marshal.GetLastWin32Error();
-                Console.WriteLine("Got errno " + error +".");
+                Trace.Write("Got errno " + error + ".");
 
                 // if we wanted to support windows, we would check for WSAEWOULDBLOCK
                 if (error == (int)Errno.EAGAIN)
                     wouldBlock = true;
+            }
+            else
+            {
+                Trace.Write("Read {0} bytes from socket.", result);
             }
 
             return result;
@@ -75,13 +80,22 @@ namespace Oars.Core
         public int Write(IntPtr fd, int count, out bool wouldBlock)
         {
             wouldBlock = false;
+            Trace.Write("Attempting to write {0} bytes to socket.", count);
             var result = evbuffer_write_atmost(handle, fd, count);
 
             if (result < 0)
             {
-                result = 0;
-                if (Marshal.GetLastWin32Error() == (int)Errno.EAGAIN)
+                // reads the C std lib 'errno' value, even on Unix/Mono
+                var error = Marshal.GetLastWin32Error();
+                Trace.Write("Got errno " + error + ".");
+
+                // if we wanted to support windows, we would check for WSAEWOULDBLOCK
+                if (error == (int)Errno.EAGAIN)
                     wouldBlock = true;
+            }
+            else
+            {
+                Trace.Write("Wrote {0} bytes to socket.", result);
             }
 
             return result;
@@ -100,6 +114,9 @@ namespace Oars.Core
 
         [DllImport("event_core")]
         private static unsafe extern int evbuffer_remove(IntPtr buf, byte* data, int len);
+
+        [DllImport("event_core")]
+        private static unsafe extern int evbuffer_drain(IntPtr buf, int len);
 
         [DllImport("event_core")]
         private static extern int evbuffer_remove_buffer(IntPtr src, IntPtr dest, int len);

@@ -1,11 +1,33 @@
-﻿using System;
+using System;
 using System.Threading;
 using Oars.Core;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Oars
 {
+    public static class Trace
+    {
+        public static void Write(string format, params object[] args)
+        {
+            //StackTrace stackTrace = new StackTrace();
+            //StackFrame stackFrame = stackTrace.GetFrame(1);
+            //MethodBase methodBase = stackFrame.GetMethod();
+            //Console.WriteLine("[thread " + Thread.CurrentThread.ManagedThreadId + ", " + methodBase.DeclaringType.Name + "." + methodBase.Name + "] " + string.Format(format, args));
+        }
+    }
+
     public static class Extensions
     {
+        public static void HandleException(string handlerName, Exception e)
+        {
+            Console.WriteLine("Exception during " + handlerName);
+            Console.WriteLine("[{0}] {1}\n{2}", e.GetType().Name, e.Message, e.StackTrace);
+        }
+
         public static Thread StartDispatchOnNewThread(this EventBase eventBase)
         {
             return eventBase.StartDispatchOnNewThread(null);

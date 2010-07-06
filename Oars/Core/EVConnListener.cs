@@ -25,6 +25,7 @@ namespace Oars.Core
         IntPtr lev;
 
         bool disabled;
+        Delegate cb;
 
         public EVConnListener(EventBase eventBase, IPEndPoint endpoint, short backlog)
         {
@@ -33,9 +34,10 @@ namespace Oars.Core
 
             var options = (short)(ConnectionListenerOptions.CloseOnFree | ConnectionListenerOptions.Reusable);
             var socketAddr = sockaddr_in.FromIPEndPoint(endpoint);
-            var cb = Marshal.GetFunctionPointerForDelegate(new evconnlistener_cb(ConnectionCallback));
+            cb = Delegate.CreateDelegate(typeof(evconnlistener_cb), this, "ConnectionCallback");
+            var callbackPointer = Marshal.GetFunctionPointerForDelegate(cb);
 
-            lev = evconnlistener_new_bind(eventBase.Handle, cb, IntPtr.Zero, 
+            lev = evconnlistener_new_bind(eventBase.Handle, callbackPointer, IntPtr.Zero, 
                 options, backlog, ref socketAddr, sockaddr_in.StructureLength);
 
             if (lev == IntPtr.Zero)
@@ -60,17 +62,25 @@ namespace Oars.Core
             evconnlistener_disable(lev);
             disabled = true;
         }
+
         void ConnectionCallback(IntPtr listener, IntPtr socket, sockaddr_in address, int socklen, IntPtr ctx)
         {
-            if (ConnectionAccepted != null)
-                ConnectionAccepted(this, new ConnectionAcceptedEventArgs(socket, address.ToIPEndPoint()));
+            try
+            {
+                if (ConnectionAccepted != null)
+                    ConnectionAccepted(this, new ConnectionAcceptedEventArgs(socket, address.ToIPEndPoint()));
+            }
+            catch (Exception e)
+            {
+                Extensions.HandleException("EVConnListener callback", e);
+            }
         }
 
         #region interop
 
         enum ConnectionListenerOptions
         {
-            //LeaveSocketsBlocking = 1 << 0,
+            LeaveSocketsBlocking = 1 << 0,
             CloseOnFree = 1 << 1,
             //CloseOnExec = 1 << 2,
             Reusable = 1 << 3
