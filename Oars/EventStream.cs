@@ -291,6 +291,7 @@ namespace Oars
             if (writeEvent != null)
                 CleanupWriting();
 
+            handle.Close();
             disposed = true;
         }
 
@@ -311,6 +312,10 @@ namespace Oars
             get { return (fileAccess & FileAccess.Write) > 0; }
         }
 
+        public override void Flush()
+        {
+            // no op
+        }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -335,11 +340,6 @@ namespace Oars
         public override bool CanSeek
         {
             get { return false; }
-        }
-
-        public override void Flush()
-        {
-            throw new NotSupportedException();
         }
 
         public override long Length

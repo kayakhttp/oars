@@ -4,21 +4,9 @@ using System.Runtime.InteropServices;
 
 namespace Oars.Core
 {
-    public sealed class ConnectionAcceptedEventArgs : EventArgs
-    {
-        public IntPtr Socket { get; private set; }
-        public IPEndPoint RemoteEndPoint { get; private set; }
-
-        internal ConnectionAcceptedEventArgs(IntPtr socket, IPEndPoint remoteEndPoint)
-        {
-            Socket = socket;
-            RemoteEndPoint = remoteEndPoint;
-        }
-    }
-
     public sealed class EVConnListener : IDisposable
     {
-        public event EventHandler<ConnectionAcceptedEventArgs> ConnectionAccepted;
+        public Action<IntPtr, IPEndPoint> ConnectionAccepted;
         public EventBase Base { get; set; }
         public IPEndPoint ListenEndPoint { get; private set; }
 
@@ -68,7 +56,7 @@ namespace Oars.Core
             try
             {
                 if (ConnectionAccepted != null)
-                    ConnectionAccepted(this, new ConnectionAcceptedEventArgs(socket, address.ToIPEndPoint()));
+                    ConnectionAccepted(socket, address.ToIPEndPoint());
             }
             catch (Exception e)
             {
