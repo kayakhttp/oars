@@ -15,7 +15,7 @@ namespace Oars
         //EV_ET = 0x20,
     }
 
-    public sealed class EVEvent : IDisposable
+    public sealed class Event : IDisposable
     {
         public IntPtr Socket { get; private set; }
         public IntPtr Handle { get; private set; }
@@ -26,17 +26,17 @@ namespace Oars
         Delegate cb;
         IntPtr fp;
 
-        public static EVEvent CreateTimer(EventBase eventBase)
+        public static Event CreateTimer(EventBase eventBase)
         {
             return CreateTimer(eventBase, false);
         }
 
-        public static EVEvent CreateTimer(EventBase eventBase, bool persist)
+        public static Event CreateTimer(EventBase eventBase, bool persist)
         {
-            return new EVEvent(eventBase, new IntPtr(-1), persist ? Events.EV_PERSIST : Events.None);
+            return new Event(eventBase, new IntPtr(-1), persist ? Events.EV_PERSIST : Events.None);
         }
 
-        public EVEvent(EventBase eventBase, IntPtr fd, Events what)
+        public Event(EventBase eventBase, IntPtr fd, Events what)
         {
             Socket = fd;
             cb = Delegate.CreateDelegate(typeof(event_callback_fn), this, "EventCallbackInternal");

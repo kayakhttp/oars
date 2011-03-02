@@ -18,7 +18,7 @@ namespace OarsTests
         public static short TestBacklog = 1;
 
         EventBase eventBase;
-        EVConnListener listener;
+        ConnectionListener listener;
         IPEndPoint connectedEndpoint;
         TcpClient client;
 
@@ -27,7 +27,7 @@ namespace OarsTests
         {
             connectedEndpoint = null;
             eventBase = new EventBase();
-            listener = new EVConnListener(eventBase, TestEndPoint, TestBacklog);
+            listener = new ConnectionListener(eventBase, TestEndPoint, TestBacklog);
             listener.ConnectionAccepted = ConnectionAccepted;
             client = new TcpClient();
         }

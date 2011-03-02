@@ -4,20 +4,20 @@ using System.Diagnostics;
 
 namespace Oars
 {
-    public sealed class EVBuffer : IDisposable
+    public sealed class Buffer : IDisposable
     {
         IntPtr handle;
         bool ownsBuffer;
 
         public int Length { get { return evbuffer_get_length(handle); } }
 
-        public EVBuffer()
+        public Buffer()
         {
             handle = evbuffer_new();
             ownsBuffer = true;
         }
 
-        public EVBuffer(IntPtr handle)
+        public Buffer(IntPtr handle)
         {
             this.handle = handle;
         }
@@ -49,7 +49,7 @@ namespace Oars
             }
         }
 
-        public int Remove(EVBuffer buffer, int len)
+        public int Remove(Buffer buffer, int len)
         {
             return evbuffer_remove_buffer(handle, buffer.handle, len);
         }

@@ -9,7 +9,7 @@ namespace OarsTests
     [TestFixture]
     public class EventTests
     {
-        EVEvent ev1, ev2, ev3;
+        Event ev1, ev2, ev3;
         EventBase eventBase;
         DateTime added, activated;
         bool ev1Activated, ev2Activated, ev3Activated;
@@ -31,7 +31,7 @@ namespace OarsTests
         {
             var intendedDuration = TimeSpan.FromMilliseconds(500);
 
-            ev1 = EVEvent.CreateTimer(eventBase);
+            ev1 = Event.CreateTimer(eventBase);
 
             var dispatch = eventBase.StartDispatchOnNewThread(() =>
             {
@@ -73,11 +73,11 @@ namespace OarsTests
             var removeTimeout = TimeSpan.FromMilliseconds(250);
             var timeoutToBeRemoved = TimeSpan.FromMilliseconds(375);
 
-            ev1 = EVEvent.CreateTimer(eventBase);
+            ev1 = Event.CreateTimer(eventBase);
             ev1.Activated = Ev1Activated;
-            ev2 = EVEvent.CreateTimer(eventBase);
+            ev2 = Event.CreateTimer(eventBase);
             ev2.Activated = Ev2Activated;
-            ev3 = EVEvent.CreateTimer(eventBase);
+            ev3 = Event.CreateTimer(eventBase);
             ev3.Activated = Ev3Activated;
 
             var dispatch = eventBase.StartDispatchOnNewThread(() => {

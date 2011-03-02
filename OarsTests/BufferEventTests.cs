@@ -17,7 +17,7 @@ namespace OarsTests
         static byte[] testData = Encoding.UTF8.GetBytes(testString);
 
         EventBase eventBase;
-        EVConnListener listener;
+        ConnectionListener listener;
         BufferEvent bufferEvent;
         TcpClient client;
         MemoryStream readData;
@@ -28,7 +28,7 @@ namespace OarsTests
         public void SetUp()
         {
             eventBase = new EventBase();
-            listener = new EVConnListener(eventBase, EVConnListenerTests.TestEndPoint, EVConnListenerTests.TestBacklog);
+            listener = new ConnectionListener(eventBase, EVConnListenerTests.TestEndPoint, EVConnListenerTests.TestBacklog);
             listener.ConnectionAccepted = ConnectionAccepted;
             client = new TcpClient();
             readData = new MemoryStream();
@@ -102,7 +102,7 @@ namespace OarsTests
 
             if (writeTest)
             {
-                EVBuffer output = bufferEvent.Output;
+                Oars.Buffer output = bufferEvent.Output;
                 output.Add(testData, 0, testData.Length);
                 //Console.WriteLine("added data");
             }
@@ -115,7 +115,7 @@ namespace OarsTests
 
         void Read(object sender, EventArgs e)
         {
-            EVBuffer input = bufferEvent.Input;
+            Oars.Buffer input = bufferEvent.Input;
 
             var buffer = new byte[16];
             int bytesRead = 0;

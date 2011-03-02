@@ -11,12 +11,12 @@ namespace OarsTests
     {
         static byte[] testData = Encoding.UTF8.GetBytes("this is some test data!!!");
 
-        EVBuffer buffer;
+        Buffer buffer;
 
         [SetUp]
         public void Setup()
         {
-            buffer = new EVBuffer();
+            buffer = new Buffer();
         }
 
         [TearDown]
@@ -47,7 +47,7 @@ namespace OarsTests
         {
             buffer.Add(testData, 0, testData.Length);
 
-            var buffer2 = new EVBuffer();
+            var buffer2 = new Buffer();
             buffer.Remove(buffer2, testData.Length);
 
             Assert.AreEqual(buffer.Length, 0);

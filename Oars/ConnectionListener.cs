@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Oars
 {
-    public sealed class EVConnListener : IDisposable
+    public sealed class ConnectionListener : IDisposable
     {
         public Action<IntPtr, IPEndPoint> ConnectionAccepted;
         public EventBase Base { get; set; }
@@ -16,7 +16,7 @@ namespace Oars
         bool disabled;
         Delegate cb;
 
-        public EVConnListener(EventBase eventBase, IPEndPoint endpoint, short backlog)
+        public ConnectionListener(EventBase eventBase, IPEndPoint endpoint, short backlog)
         {
             Base = eventBase;
             ListenEndPoint = endpoint;

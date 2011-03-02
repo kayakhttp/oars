@@ -25,15 +25,15 @@ namespace Oars
         public EventBase EventBase { get; private set; }
         IntPtr bev;
 
-        EVBuffer input;
-        EVBuffer output;
+        Buffer input;
+        Buffer output;
 
         public event EventHandler Read;
         public event EventHandler Write;
         public event EventHandler<BufferEventEventArgs> Event;
 
-        public EVBuffer Input { get { return input ?? (input = new EVBuffer(bufferevent_get_input(bev))); } }
-        public EVBuffer Output { get { return output ?? (output = new EVBuffer(bufferevent_get_output(bev))); } }
+        public Buffer Input { get { return input ?? (input = new Buffer(bufferevent_get_input(bev))); } }
+        public Buffer Output { get { return output ?? (output = new Buffer(bufferevent_get_output(bev))); } }
 
         int readLow, readHigh = -1;
 
