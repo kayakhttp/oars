@@ -16,14 +16,14 @@ namespace Oars.Core
 
     public sealed class EVEvent : IDisposable
     {
-        IntPtr fd;
-        IntPtr fp;
+        public IntPtr Socket { get; private set; }
         public IntPtr Handle { get; private set; }
         public Events Events { get; private set; }
 
-        public event EventHandler Activated;
+        public Action Activated;
         bool pending;
         Delegate cb;
+        IntPtr fp;
 
         public static EVEvent CreateTimer(EventBase eventBase)
         {
@@ -37,7 +37,7 @@ namespace Oars.Core
 
         public EVEvent(EventBase eventBase, IntPtr fd, Events what)
         {
-            this.fd = fd;
+            Socket = fd;
             cb = Delegate.CreateDelegate(typeof(event_callback_fn), this, "EventCallbackInternal");
 
             fp = Marshal.GetFunctionPointerForDelegate(cb);
@@ -47,7 +47,7 @@ namespace Oars.Core
 
         public void Dispose()
         {
-            Trace.Write("EVEvent disposed with fd " + fd.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
+            Trace.Write("EVEvent disposed with fd " + Socket.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
             ThrowIfDisposed();
 
             if (pending)
@@ -94,7 +94,7 @@ namespace Oars.Core
             {
                 Trace.Write("Event on fd {0} activated with events {1}.", fd.ToInt32(), Events);
                 if (Activated != null)
-                    Activated(this, EventArgs.Empty);
+                    Activated();
             }
             catch (Exception e)
             {

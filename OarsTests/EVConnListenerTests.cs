@@ -29,7 +29,7 @@ namespace OarsTests
             connectedEndpoint = null;
             eventBase = new EventBase();
             listener = new EVConnListener(eventBase, TestEndPoint, TestBacklog);
-            listener.ConnectionAccepted += ConnectionAccepted;
+            listener.ConnectionAccepted = ConnectionAccepted;
             client = new TcpClient();
         }
 
@@ -37,7 +37,7 @@ namespace OarsTests
         public void TearDown()
         {
             client.Close();
-            listener.ConnectionAccepted -= ConnectionAccepted;
+            listener.ConnectionAccepted = null;
             listener.Dispose();
             eventBase.Dispose();
         }
@@ -63,10 +63,10 @@ namespace OarsTests
             //Assert.AreEqual(((IPEndPoint)client.Client.LocalEndPoint).Address.ToString(), connectedEndpoint.Address.ToString(), "IPEndPoint addresses do not match.");
         }
 
-        void ConnectionAccepted(object sender, ConnectionAcceptedEventArgs e)
+        void ConnectionAccepted(IntPtr fd, IPEndPoint remoteEndPoint)
         {
             //Console.WriteLine("Got connection event.");
-            connectedEndpoint = e.RemoteEndPoint;
+            connectedEndpoint = remoteEndPoint;
         }
     }
 }

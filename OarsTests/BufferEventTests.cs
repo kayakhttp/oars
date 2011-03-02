@@ -7,6 +7,7 @@ using Oars;
 using Oars.Core;
 using System.Net.Sockets;
 using System.IO;
+using System.Net;
 
 namespace OarsTests
 {
@@ -29,7 +30,7 @@ namespace OarsTests
         {
             eventBase = new EventBase();
             listener = new EVConnListener(eventBase, EVConnListenerTests.TestEndPoint, EVConnListenerTests.TestBacklog);
-            listener.ConnectionAccepted += ConnectionAccepted;
+            listener.ConnectionAccepted = ConnectionAccepted;
             client = new TcpClient();
             readData = new MemoryStream();
         }
@@ -92,9 +93,9 @@ namespace OarsTests
             Assert.AreEqual(testString, recievedString);
         }
 
-        void ConnectionAccepted(object sender, ConnectionAcceptedEventArgs e)
+        void ConnectionAccepted(IntPtr socket, IPEndPoint ep)
         {
-            bufferEvent = new BufferEvent(eventBase, e.Socket);
+            bufferEvent = new BufferEvent(eventBase, socket);
             bufferEvent.Read += Read;
             bufferEvent.Write += Write;
             bufferEvent.Event += Event;

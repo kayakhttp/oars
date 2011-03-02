@@ -125,15 +125,38 @@ namespace Oars.Core
 		}
     }
 
-    static class FDExtensions
+    public static class FDExtensions
     {
-        [DllImport("libc")]
-        static extern int close(IntPtr fd);
-
         public static int Close(this IntPtr fd)
         {
             return close(fd);
         }
+
+        public static int Recv(this IntPtr fd, ArraySegment<byte> buffer, int flags)
+        {
+            unsafe
+            {
+                fixed (byte* ptr = &(buffer.Array[buffer.Offset]))
+                    return recv(fd, ptr, buffer.Count, flags);
+            }
+        }
+
+        public static int Send(this IntPtr fd, ArraySegment<byte> buffer, int flags)
+        {
+            unsafe {
+                fixed (byte *ptr = &(buffer.Array[buffer.Offset]))
+                    return send(fd, ptr, buffer.Count, flags);
+            }
+        }
+
+        [DllImport("libc")]
+        static extern int close(IntPtr fd);
+
+        [DllImport("libc")]
+        static unsafe extern int send(IntPtr fd, byte* buffer, int length, int flags);
+
+        [DllImport("libc")]
+        static unsafe extern int recv(IntPtr fd, byte* buffer, int length, int flags);
     }
 
     // lifted this from Mono.Unix/Stdlib.cs

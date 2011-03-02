@@ -41,7 +41,7 @@ namespace OarsTests
                 added = eventBase.GetTimeOfDayCached();
                 //Console.WriteLine("Added event at time: " + added.Millisecond);
 
-                ev1.Activated += EventTimerAddActivated;
+                ev1.Activated = EventTimerAddActivated;
             }, () => {
                 ev1.Delete();
                 ev1.Dispose();
@@ -58,13 +58,13 @@ namespace OarsTests
             Assert.Less(difference.TotalMilliseconds, 10, "Large discrepancy between intended and actual timeout duration.");
         }
 
-        void EventTimerAddActivated(object o, EventArgs e)
+        void EventTimerAddActivated()
         {
             //Console.WriteLine("Activated event.");
             ev1Activated = true;
             activated = eventBase.GetTimeOfDayCached();
             eventBase.LoopExit();
-            ev1.Activated -= EventTimerAddActivated;
+            ev1.Activated = null;
         }
 
         [Test]
@@ -75,11 +75,11 @@ namespace OarsTests
             var timeoutToBeRemoved = TimeSpan.FromMilliseconds(375);
 
             ev1 = EVEvent.CreateTimer(eventBase);
-            ev1.Activated += new EventHandler(Ev1Activated);
+            ev1.Activated = Ev1Activated;
             ev2 = EVEvent.CreateTimer(eventBase);
-            ev2.Activated += new EventHandler(Ev2Activated);
+            ev2.Activated = Ev2Activated;
             ev3 = EVEvent.CreateTimer(eventBase);
-            ev3.Activated += new EventHandler(Ev3Activated);
+            ev3.Activated = Ev3Activated;
 
             var dispatch = eventBase.StartDispatchOnNewThread(() => {
                 ev1.Add(timeout);
@@ -100,7 +100,7 @@ namespace OarsTests
         }
 
         // comes in first
-        void Ev1Activated(object sender, EventArgs e)
+        void Ev1Activated()
         {
             ev1Activated = true;
             ev3.Delete();
@@ -108,14 +108,14 @@ namespace OarsTests
         }
 
         // comes in second
-        void Ev2Activated(object sender, EventArgs e)
+        void Ev2Activated()
         {
             ev2Activated = true;
             eventBase.LoopExit();
         }
         
         // should never happen (would come before ev2 if event was not deleted)
-        void Ev3Activated(object sender, EventArgs e)
+        void Ev3Activated()
         {
             // should never happen
             ev3Activated = true;
