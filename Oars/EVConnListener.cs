@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace Oars
 {
@@ -60,7 +61,8 @@ namespace Oars
             }
             catch (Exception e)
             {
-                Extensions.HandleException("EVConnListener callback", e);
+                Debug.WriteLine("Exception during connection listener callback.");
+                //Extensions.HandleException("EVConnListener callback", e);
             }
         }
 

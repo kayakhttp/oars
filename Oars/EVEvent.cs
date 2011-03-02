@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace Oars
 {
@@ -41,13 +42,13 @@ namespace Oars
             cb = Delegate.CreateDelegate(typeof(event_callback_fn), this, "EventCallbackInternal");
 
             fp = Marshal.GetFunctionPointerForDelegate(cb);
-            Trace.Write("EVEvent created with fd " + fd.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
+            Debug.Write("EVEvent created with fd " + fd.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
             Handle = event_new(eventBase.Handle, fd, (short)what, fp, IntPtr.Zero);
         }
 
         public void Dispose()
         {
-            Trace.Write("EVEvent disposed with fd " + Socket.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
+            Debug.Write("EVEvent disposed with fd " + Socket.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
             ThrowIfDisposed();
 
             if (pending)
@@ -92,13 +93,13 @@ namespace Oars
 
             try
             {
-                Trace.Write("Event on fd {0} activated with events {1}.", fd.ToInt32(), Events);
+                Debug.WriteLine("Event on fd {0} activated with events {1}.", fd.ToInt32(), Events);
                 if (Activated != null)
                     Activated();
             }
             catch (Exception e)
             {
-                Extensions.HandleException("EVEvent event callback", e);
+                Debug.WriteLine("Exception during event callback.");
             }
 
             Events = Events.None;

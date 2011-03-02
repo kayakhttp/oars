@@ -64,14 +64,12 @@
     <Reference Include="System.Reactive, Version=1.0.2787.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\EVBuffer.cs" />
-    <Compile Include="Core\BufferEvent.cs" />
-    <Compile Include="Core\EVConnListener.cs" />
-    <Compile Include="Core\EventBase.cs" />
-    <Compile Include="Core\EVEvent.cs" />
-    <Compile Include="Core\Interop.cs" />
-    <Compile Include="EventStream.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="BufferEvent.cs" />
+    <Compile Include="EVBuffer.cs" />
+    <Compile Include="EVConnListener.cs" />
+    <Compile Include="EventBase.cs" />
+    <Compile Include="EVEvent.cs" />
+    <Compile Include="Interop.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

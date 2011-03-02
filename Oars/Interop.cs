@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Oars
 {
-    struct timeval
+    internal struct timeval
     {
         public int tv_sec;
         public int tv_usec;

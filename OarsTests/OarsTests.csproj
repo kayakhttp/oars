@@ -71,15 +71,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Oars\Core\Interop.cs">
-      <Link>Interop.cs</Link>
-    </Compile>
     <Compile Include="BufferEventTests.cs" />
     <Compile Include="EVBufferTests.cs" />
     <Compile Include="EVConnListenerTests.cs" />
     <Compile Include="EventBaseTests.cs" />
     <Compile Include="EventStreamTests.cs" />
     <Compile Include="EVEventTests.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="InteropTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

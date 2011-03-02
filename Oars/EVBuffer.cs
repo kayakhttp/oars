@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace Oars
 {
@@ -56,14 +57,14 @@ namespace Oars
         public int Read(IntPtr fd, int count, out bool wouldBlock)
         {
             wouldBlock = false;
-            Trace.Write("Attempting to read {0} bytes from socket.", count);
+            Debug.WriteLine("Attempting to read {0} bytes from socket.", count);
             var result = evbuffer_read(handle, fd, count);
 
             if (result < 0)
             {
                 // reads the C std lib 'errno' value, even on Unix/Mono
                 var error = Marshal.GetLastWin32Error();
-                Trace.Write("Got errno " + error + ".");
+                Debug.WriteLine("Got errno " + error + ".");
 
                 // if we wanted to support windows, we would check for WSAEWOULDBLOCK
                 if (error == (int)Errno.EAGAIN)
@@ -71,7 +72,7 @@ namespace Oars
             }
             else
             {
-                Trace.Write("Read {0} bytes from socket.", result);
+                Debug.WriteLine("Read {0} bytes from socket.", result);
             }
 
             return result;
@@ -80,14 +81,14 @@ namespace Oars
         public int Write(IntPtr fd, int count, out bool wouldBlock)
         {
             wouldBlock = false;
-            Trace.Write("Attempting to write {0} bytes to socket.", count);
+            Debug.WriteLine("Attempting to write {0} bytes to socket.", count);
             var result = evbuffer_write_atmost(handle, fd, count);
 
             if (result < 0)
             {
                 // reads the C std lib 'errno' value, even on Unix/Mono
                 var error = Marshal.GetLastWin32Error();
-                Trace.Write("Got errno " + error + ".");
+                Debug.WriteLine("Got errno " + error + ".");
 
                 // if we wanted to support windows, we would check for WSAEWOULDBLOCK
                 if (error == (int)Errno.EAGAIN)
@@ -95,7 +96,7 @@ namespace Oars
             }
             else
             {
-                Trace.Write("Wrote {0} bytes to socket.", result);
+                Debug.WriteLine("Wrote {0} bytes to socket.", result);
             }
 
             return result;
