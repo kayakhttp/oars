@@ -6,7 +6,6 @@ using NUnit.Framework;
 using Oars;
 using System.Net;
 using System.Threading;
-using Oars.Core;
 
 namespace OarsTests
 {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Oars;
-using Oars.Core;
 using System.Net;
 using System.Threading;
 using System.Net.Sockets;

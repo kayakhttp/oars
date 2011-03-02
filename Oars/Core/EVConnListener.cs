@@ -2,7 +2,7 @@
 using System.Net;
 using System.Runtime.InteropServices;
 
-namespace Oars.Core
+namespace Oars
 {
     public sealed class EVConnListener : IDisposable
     {

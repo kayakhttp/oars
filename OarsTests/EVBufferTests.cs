@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Oars.Core;
+using Oars;
 
 namespace OarsTests
 {

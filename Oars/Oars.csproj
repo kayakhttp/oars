@@ -70,7 +70,6 @@
     <Compile Include="Core\EventBase.cs" />
     <Compile Include="Core\EVEvent.cs" />
     <Compile Include="Core\Interop.cs" />
-    <Compile Include="EventObservable.cs" />
     <Compile Include="EventStream.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

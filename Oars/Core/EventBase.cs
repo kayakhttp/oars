@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Oars.Core
+namespace Oars
 {
     public enum LoopOptions : int
     {
