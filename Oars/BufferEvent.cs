@@ -22,6 +22,7 @@ namespace Oars
 
     public sealed class BufferEvent : IDisposable
     {
+        bool disposed;
         public EventBase EventBase { get; private set; }
         IntPtr bev;
 
@@ -32,8 +33,8 @@ namespace Oars
         public event EventHandler Write;
         public event EventHandler<BufferEventEventArgs> Event;
 
-        public Buffer Input { get { return input ?? (input = new Buffer(bufferevent_get_input(bev))); } }
-        public Buffer Output { get { return output ?? (output = new Buffer(bufferevent_get_output(bev))); } }
+        public Buffer Input { get { if (disposed) throw new ObjectDisposedException("Input EVBuffer"); return input ?? (input = new Buffer(bufferevent_get_input(bev))); } }
+        public Buffer Output { get { if (disposed) throw new ObjectDisposedException("Ouput EVBuffer"); return output ?? (output = new Buffer(bufferevent_get_output(bev))); } }
 
         int readLow, readHigh = -1;
 
@@ -54,23 +55,51 @@ namespace Oars
             bufferevent_setwatermark(bev, Events.EV_READ, new IntPtr(readLow), new IntPtr(readHigh));
         }
 
-        public BufferEvent(EventBase eventBase, IntPtr socket)
+        bufferevent_data_cb readdel;
+        bufferevent_data_cb writedel;
+        bufferevent_event_cb eventdel;
+
+        public BufferEvent(EventBase eventBase, IntPtr socket, int timeout)
         {
             var options = (int)(BufferEventOptions.CloseOnFree | BufferEventOptions.DeferCallbacks);
             bev = bufferevent_socket_new(eventBase.Handle, socket, options);
+            var t = timeval.FromTimeSpan(TimeSpan.FromMilliseconds(timeout));
+            bufferevent_set_timeouts(bev, ref t, ref t);
             //Console.WriteLine("bufferevent_socket_new returned " + bev.ToInt32());
 
             // none of these can throw exceptions.
-            var readCb = Marshal.GetFunctionPointerForDelegate(new bufferevent_data_cb(ReadCallbackInternal));
-            var writeCb = Marshal.GetFunctionPointerForDelegate(new bufferevent_data_cb(WriteCallbackInternal));
-            var eventCb = Marshal.GetFunctionPointerForDelegate(new bufferevent_event_cb(EventCallbackInternal));
+            readdel = new bufferevent_data_cb(ReadCallbackInternal);
+            var readCb = Marshal.GetFunctionPointerForDelegate(readdel);
+            writedel = new bufferevent_data_cb(WriteCallbackInternal);
+            var writeCb = Marshal.GetFunctionPointerForDelegate(writedel);
+            eventdel = new bufferevent_event_cb(EventCallbackInternal);
+            var eventCb = Marshal.GetFunctionPointerForDelegate(eventdel);
 
             bufferevent_setcb(bev, readCb, writeCb, eventCb, IntPtr.Zero);
         }
 
+        void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                if (disposing)
+                {
+                    if (input != null)
+                        input.Dispose();
+                    if (output != null)
+                        output.Dispose();
+                    readdel = null;
+                    writedel = null;
+                    eventdel = null;
+                }
+                bufferevent_free(bev);
+            }
+        }
+
         public void Dispose()
         {
-            bufferevent_free(bev);
+            Dispose(true);
         }
 
         public void Enable()
@@ -125,12 +154,16 @@ namespace Oars
         private delegate void bufferevent_data_cb(IntPtr bev, IntPtr ctx);
         private delegate void bufferevent_event_cb(IntPtr bev, short what, IntPtr ctx);
 
+        [Flags]
         enum BufferEventOptions
         {
             CloseOnFree = 1 << 0,
             ThreadSafe = 1 << 1,
             DeferCallbacks = 1 << 2
         }
+
+        [DllImport("event_core")]
+        static extern void  bufferevent_set_timeouts(IntPtr bev, ref timeval timeoutread, ref timeval timeoutwrite);
 
         [DllImport("event_core")]
         static extern IntPtr bufferevent_socket_new(IntPtr event_base, IntPtr socket, int options);

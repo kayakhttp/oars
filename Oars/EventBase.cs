@@ -6,7 +6,8 @@ namespace Oars
     public enum LoopOptions : int
     {
         Once = 0x01,
-        NonBlock = 0x02
+        NonBlock = 0x02,
+        NoExitOnEmpy = 0x04
     }
 
     public sealed class EventBase : IDisposable

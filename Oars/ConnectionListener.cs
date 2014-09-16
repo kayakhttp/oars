@@ -5,9 +5,21 @@ using System.Diagnostics;
 
 namespace Oars
 {
+    public sealed class ConnectionAcceptedEventArgs : EventArgs
+    {
+        public IntPtr Socket { get; private set; }
+        public IPEndPoint RemoteEndPoint { get; private set; }
+
+        internal ConnectionAcceptedEventArgs(IntPtr socket, IPEndPoint remoteEndPoint)
+        {
+            Socket = socket;
+            RemoteEndPoint = remoteEndPoint;
+        }
+    }
+
     public sealed class ConnectionListener : IDisposable
     {
-        public Action<IntPtr, IPEndPoint> ConnectionAccepted;
+        public event EventHandler<ConnectionAcceptedEventArgs> ConnectionAccepted;
         public EventBase Base { get; set; }
         public IPEndPoint ListenEndPoint { get; private set; }
 
@@ -52,17 +64,19 @@ namespace Oars
             disabled = true;
         }
 
-        void ConnectionCallback(IntPtr listener, IntPtr socket, sockaddr_in address, int socklen, IntPtr ctx)
+        void ConnectionCallback(IntPtr listener, IntPtr socket, IntPtr address, int socklen, IntPtr ctx)
         {
             try
             {
-                if (ConnectionAccepted != null)
-                    ConnectionAccepted(socket, address.ToIPEndPoint());
+                if (ConnectionAccepted != null){
+                    sockaddr_in sockAddrIn = (sockaddr_in)Marshal.PtrToStructure(address, typeof(sockaddr_in));
+                    ConnectionAccepted(this, new ConnectionAcceptedEventArgs(socket, 
+                        new IPEndPoint(sockAddrIn.sin_addr.s_addr, (ushort)IPAddress.NetworkToHostOrder((short)sockAddrIn.sin_port))));
+                }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debug.WriteLine("Exception during connection listener callback.");
-                //Extensions.HandleException("EVConnListener callback", e);
             }
         }
 
@@ -77,7 +91,7 @@ namespace Oars
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void evconnlistener_cb(IntPtr listener, IntPtr socket, sockaddr_in address, int socklen, IntPtr ctx);
+        private delegate void evconnlistener_cb(IntPtr listener, IntPtr socket, IntPtr address, int socklen, IntPtr ctx);
 
         [DllImport("event_core")]
         private unsafe static extern IntPtr evconnlistener_new_bind(IntPtr event_base, IntPtr cb, IntPtr ctx, short flags, short backlog, ref sockaddr_in sa, short socklen);
