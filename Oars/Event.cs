@@ -4,6 +4,7 @@ using System.Diagnostics;
 
 namespace Oars
 {
+    [Flags]
     public enum Events : short
     {
         None = 0,
@@ -17,14 +18,14 @@ namespace Oars
 
     public sealed class Event : IDisposable
     {
-        public IntPtr Socket { get; private set; }
+        IntPtr fd;
+        IntPtr fp;
         public IntPtr Handle { get; private set; }
         public Events Events { get; private set; }
 
-        public Action Activated;
+        public event EventHandler Activated;
         bool pending;
         Delegate cb;
-        IntPtr fp;
 
         public static Event CreateTimer(EventBase eventBase)
         {
@@ -38,17 +39,17 @@ namespace Oars
 
         public Event(EventBase eventBase, IntPtr fd, Events what)
         {
-            Socket = fd;
+            this.fd = fd;
             cb = Delegate.CreateDelegate(typeof(event_callback_fn), this, "EventCallbackInternal");
 
             fp = Marshal.GetFunctionPointerForDelegate(cb);
-            Debug.Write("EVEvent created with fd " + fd.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
+            Debug.WriteLine("EVEvent created with fd " + fd.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
             Handle = event_new(eventBase.Handle, fd, (short)what, fp, IntPtr.Zero);
         }
 
         public void Dispose()
         {
-            Debug.Write("EVEvent disposed with fd " + Socket.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
+            Debug.WriteLine("EVEvent disposed with fd " + fd.ToInt32().ToString("x") + ", cb " + fp.ToInt32().ToString("x"));
             ThrowIfDisposed();
 
             if (pending)
@@ -95,9 +96,9 @@ namespace Oars
             {
                 Debug.WriteLine("Event on fd {0} activated with events {1}.", fd.ToInt32(), Events);
                 if (Activated != null)
-                    Activated();
+                    Activated(this, EventArgs.Empty);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debug.WriteLine("Exception during event callback.");
             }

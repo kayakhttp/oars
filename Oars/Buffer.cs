@@ -6,6 +6,7 @@ namespace Oars
 {
     public sealed class Buffer : IDisposable
     {
+        bool disposed;
         IntPtr handle;
         bool ownsBuffer;
 
@@ -22,10 +23,20 @@ namespace Oars
             this.handle = handle;
         }
 
+        void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                disposed = true;
+
+                if (ownsBuffer)
+                    evbuffer_free(handle);
+            }
+        }
+
         public void Dispose()
         {
-            if (ownsBuffer)
-                evbuffer_free(handle);
+            Dispose(true);
         }
 
         public bool Add(byte[] data, int offset, int count)
@@ -40,8 +51,6 @@ namespace Oars
         {
             if (offset + count > data.Length)
                 throw new Exception("offset + count > data.Length");
-
-            var c = new IntPtr(count);
 
             unsafe {
                 fixed (byte *ptr = &data[0])
